@@ -6,8 +6,8 @@ app = Quart(__name__)
 app = cors(app, allow_origin='http://92.205.129.142:8080')
 
 # Пример маршрута для GET-запроса
-@app.route('/dyweapi/v1/getData/<address>/<timeframe>', methods=['GET'])
-async def get_data(address,timeframe):
+@app.route('/dyweapi/v1/getData/<address>', methods=['GET'])
+async def get_data(address):
    try:
        with open(f'candles/candles{address}.json', 'r+') as f:
             data = json.load(f)
@@ -18,10 +18,10 @@ async def get_data(address,timeframe):
        return jsonify({"error": "invalid Json"}), 404
    
 
-@app.route('/dyweapi/v1/getHistory/<address>/<timeframe>', methods=['GET'])
-async def get_history(address, timeframe):
+@app.route('/dyweapi/v1/getHistory/<address>', methods=['GET'])
+async def get_history(address):
    try:
-       with open(f'candles/candleHistory{address}.json', 'r+') as f:
+       with open(f'candles/candleHistory{address}.json', 'r') as f:
             data = json.load(f)
             return jsonify(data)
    except FileNotFoundError:

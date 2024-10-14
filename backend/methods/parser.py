@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import pytz
 import json
 import os
-import threading
 from methods.get_floor import get_nft_collection_floor
 
 os.environ['TZ'] = 'Europe/Moscow'
@@ -22,12 +21,12 @@ def set_timezone():
     now = datetime.now(timezone)
     print(f'Current time in Europe/Moscow timezone: {now}')
 
-def get_time():
+def get_time(address):
     global open_time, close_time, prices
     # Обновление текущего времени
     now = datetime.now()
     if len(prices) > 0 and close_time <= now.replace(second=0, microsecond=0):
-        filename = './candles/candleHistoryEQAOQdwdw8kGftJCSFgOErM1mBjYPe4DBPq8-AhF6vr9si5N.json'
+        filename = f'./candles/candleHistory{address}.json'
         if os.path.exists(filename): 
             with open(filename, 'r+') as json_file:
                 json_data = json.load(json_file)
@@ -69,18 +68,18 @@ def percentChange():
         return None
     return ((prices[-1] - prices[0]) / (prices[0] + prices[-1] / 2)) * 100
 
-async def writeFloorInFile(data, address: str = "EQAOQdwdw8kGftJCSFgOErM1mBjYPe4DBPq8-AhF6vr9si5N"):
+async def writeFloorInFile(data, address):
     with open(f'./candles/candles{address}.json', 'w+', encoding='utf8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
         print(f"File \033[96mcandles{address}\033[0m.json updated, request amount: {len(prices)}")
         file.write('\n')
 
-async def getData(address: str = "EQAOQdwdw8kGftJCSFgOErM1mBjYPe4DBPq8-AhF6vr9si5N"):
+async def getData(address):
     while True:
         try:
             data = {
-                'openTime': int(get_time()[0].timestamp() * 1000),
-                'closeTime': int(get_time()[1].timestamp() * 1000),
+                'openTime': int(get_time(address)[0].timestamp() * 1000),
+                'closeTime': int(get_time(address)[1].timestamp() * 1000),
                 'percentChangePrice': percentChange(),
                 'currentPrice': await getPrice(address),
                 'open': prices[0],
