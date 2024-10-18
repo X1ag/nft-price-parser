@@ -3,7 +3,7 @@ from quart import Quart, jsonify
 from quart_cors import cors
 
 app = Quart(__name__)
-app = cors(app, allow_origin='http://92.205.129.142:8080')
+app = cors(app, allow_origin='http://92.205.129.142:8080, http://localhost:4200')
 
 # Пример маршрута для GET-запроса
 @app.route('/dyweapi/v1/getData/<address>', methods=['GET'])
