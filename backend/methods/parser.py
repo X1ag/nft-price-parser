@@ -6,15 +6,15 @@ import os
 from methods.get_floor import get_nft_collection_floor
 
 timezone = pytz.timezone('Europe/Moscow')
+
 prices = []
 close_price = None
-isClose = False
+
 now = datetime.now(timezone)
 close_time_hour = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
 open_time_hour = now.replace(minute=0,second=0, microsecond=0)
 close_time_minutes = (now + timedelta(minutes=5)).replace(second=0, microsecond=0)
 open_time_minutes = now.replace(second=0, microsecond=0)
-prices = []  
 
 def get_time_minutes(address):
     global open_time_minutes, close_time_minutes, prices
