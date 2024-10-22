@@ -108,19 +108,31 @@ async def writeFloorInFile(data, address):
         print(f"File \033[96mcandles{address}\033[0m.json updated, request amount: {len(prices)}")
         file.write('\n')
 
-async def getData(address):
+async def getData(address, timeframe):
     while True:
         try:
-            data = {
-                'openTime': int(get_time_hour(address)[0].timestamp() * 1000),
-                'closeTime': int(get_time_hour(address)[1].timestamp() * 1000),
-                'percentChangePrice': percentChange(),
-                'currentPrice': await getPrice(address),
-                'open': prices[0],
-                'high': max(prices),
-                'low': min(prices),
-                'close': prices[-1],
-            }
+            if timeframe == '1h':
+                data = {
+                    'openTime': int(get_time_hour(address)[0].timestamp() * 1000),
+                    'closeTime': int(get_time_hour(address)[1].timestamp() * 1000),
+                    'percentChangePrice': percentChange(),
+                    'currentPrice': await getPrice(address),
+                    'open': prices[0],
+                    'high': max(prices),
+                    'low': min(prices),
+                    'close': prices[-1],
+                }
+            if timeframe == '5m':
+                data = {
+                    'openTime': int(get_time_minutes(address)[0].timestamp() * 1000),
+                    'closeTime': int(get_time_minutes(address)[1].timestamp() * 1000),
+                    'percentChangePrice': percentChange(),
+                    'currentPrice': await getPrice(address),
+                    'open': prices[0],
+                    'high': max(prices),
+                    'low': min(prices),
+                    'close': prices[-1],
+                }
             print(f'\033[93m Collected data: {data} \033[0m')
             if data:
                 await writeFloorInFile(data, address)
@@ -128,10 +140,7 @@ async def getData(address):
             print(f"Bro, eto oshibka bro: {e}")
         await asyncio.sleep(5)
 
-async def main(address):
+async def main(address, timeframe):
     print('Starting main function')
-    await getData(address)
+    await getData(address, timeframe)
 
-if __name__ == "__main__":
-    address = "EQAOQdwdw8kGftJCSFgOErM1mBjYPe4DBPq8-AhF6vr9si5N"
-    asyncio.run(main(address))

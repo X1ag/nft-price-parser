@@ -33,6 +33,7 @@ packaging==24.1
 pluggy==1.5.0
 priority==2.0.0
 pytest==8.3.3
+pytz==2024.2
 python-dateutil==2.9.0.post0
 Quart==0.19.6
 requests==2.32.3
