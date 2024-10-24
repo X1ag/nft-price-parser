@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pytz
 import json
 import os
+from db.connect_db import insert_data
 from methods.get_floor import get_nft_collection_floor
 
 timezone = pytz.timezone('Europe/Moscow')
@@ -22,13 +23,6 @@ def get_time_minutes(address):
     # Обновление текущего времени
     now = datetime.now(timezone)
     if len(prices) > 0 and close_time_minutes <= now.replace(second=0, microsecond=0):
-        filename = f'./candles/candleHistory{address}5m.json'
-        if os.path.exists(filename): 
-            with open(filename, 'r+') as json_file:
-                json_data = json.load(json_file)
-        else:
-            json_data = {"data": []}
-
         data = {
             'openTime': int(open_time_minutes.timestamp() * 1000),
             'closeTime': int(close_time_minutes.timestamp() * 1000),
@@ -39,12 +33,8 @@ def get_time_minutes(address):
             'low': min(prices),
             'close': prices[-1],
         }
-        # Добавляем новые данные в список "data"
-        json_data["data"].append(data)
-        # Записываем обновленные данные в файл
-        with open(filename, 'w+') as json_file:
-            json.dump(json_data, json_file, indent=4)
-        print(f"File \033[96mcandlesHistory{address}5m\033[0m.json updated, request amount: {len(prices)}")
+        writeInDB(data, address)
+        print(f"Minutes candles was write in DB address:{address}\033[0m")
         prices.clear()
         close_time_minutes = (now + timedelta(minutes=5)).replace(second=0, microsecond=0)
         open_time_minutes = now.replace(second=0, microsecond=0)
@@ -57,13 +47,6 @@ def get_time_hour(address):
     # Обновление текущего времени
     now = datetime.now(timezone)
     if len(prices) > 0 and close_time_hour <= now.replace(minute=0,second=0, microsecond=0):
-        filename = f'./candles/candleHistory{address}1h.json'
-        if os.path.exists(filename): 
-            with open(filename, 'r+') as json_file:
-                json_data = json.load(json_file)
-        else:
-            json_data = {"data": []}
-
         data = {
             'openTime': int(open_time_hour.timestamp() * 1000),
             'closeTime': int(close_time_hour.timestamp() * 1000),
@@ -74,12 +57,8 @@ def get_time_hour(address):
             'low': min(prices),
             'close': prices[-1],
         }
-        # Добавляем новые данные в список "data"
-        json_data["data"].append(data)
-        # Записываем обновленные данные в файл
-        with open(filename, 'w+') as json_file:
-            json.dump(json_data, json_file, indent=4)
-        print(f"File \033[96mcandlesHistory{address}\033[0m.json updated, request amount: {len(prices)}")
+        writeInDB(data, address)
+        print(f"Hours candles was write in DB address:{address}\033[0m")
         prices.clear()
         close_time_hour = (now + timedelta(hours=1)).replace(minute=0,second=0, microsecond=0)
         open_time_hour = now.replace(minute=0,second=0, microsecond=0)
@@ -102,11 +81,14 @@ def percentChange():
         return None
     return ((prices[-1] - prices[0]) / (prices[0] + prices[-1] / 2)) * 100
 
-async def writeFloorInFile(data, address):
-    with open(f'./candles/candles{address}.json', 'w+', encoding='utf8') as file:
+async def writeFloorInFile(data, address, timeframe):
+    with open(f'./candles/candles{address}{timeframe}.json', 'w+', encoding='utf8') as file:
         json.dump(data, file, ensure_ascii=False, indent=2)
-        print(f"File \033[96mcandles{address}\033[0m.json updated, request amount: {len(prices)}")
+        print(f"File \033[96mcandles{address}{timeframe}\033[0m.json updated, request amount: {len(prices)}")
         file.write('\n')
+
+def writeInDB(data, address, timeframe='1h'):
+     insert_data(address, data['openTime'], data['closeTime'], data['currentPrice'], data['open'], data['high'], data['low'], data['close'], data['percentChangePrice'], timeframe)
 
 async def getData(address, timeframe):
     while True:
@@ -133,12 +115,11 @@ async def getData(address, timeframe):
                     'low': min(prices),
                     'close': prices[-1],
                 }
-            print(f'\033[93m Collected data: {data} \033[0m')
             if data:
-                await writeFloorInFile(data, address)
+                await writeFloorInFile(data, address, timeframe)
         except Exception as e:
             print(f"Bro, eto oshibka bro: {e}")
-        await asyncio.sleep(5)
+        await asyncio.sleep(15)
 
 async def main(address, timeframe):
     print('Starting main function')
